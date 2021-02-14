@@ -96,7 +96,7 @@ int main()
 
 		if (tmp != status)
 		{
-			Print(tmp);
+			PrintRain(tmp);
 			status = tmp;
 		}
 
