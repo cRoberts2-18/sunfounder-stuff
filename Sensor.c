@@ -28,11 +28,33 @@ void PrintTemp(int x)
 	}
 }
 
+void PrintRain(int x)
+{
+	switch(x)
+	{
+		case 1:
+			printf("\n***************\n"  );
+			printf(  "* Not Raining *\n"  );
+			printf(  "***************\n\n");
+		break;
+		case 0:
+			printf("\n*************\n"  );
+			printf(  "* Raining!! *\n"  );
+			printf(  "*************\n\n");
+		break;
+		default:
+			printf("\n**********************\n"  );
+			printf(  "* Print value error. *\n"  );
+			printf(  "**********************\n\n");
+		break;
+	}
+}
+
 int main()
 {
-	unsigned char analogVal;
+	unsigned char analogVal, analogVal1;
 	double Vr, Rt, temp;
-	int tmp, status;
+	int tmp, status, tmp1, status1;
 	
 	if(wiringPiSetup() == -1){
 		printf("setup wiringPi failed !");
@@ -66,6 +88,22 @@ int main()
 		}
 
 		delay (200);
+		
+		analogVal = analogRead(PCF + 0);
+		printf("%d\n", analogVal);
+
+		tmp = digitalRead(DOpin);
+
+		if (tmp != status)
+		{
+			Print(tmp);
+			status = tmp;
+		}
+
+		delay (200);
+	}
+		
+	
 	}
 	return 0;
 }
