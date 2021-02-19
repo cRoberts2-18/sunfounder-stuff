@@ -86,7 +86,7 @@ int main()
 {
 	unsigned char analogVal, analogVal1;
 	double Vr, Rt, temp;
-	int tmp, status, tmp1, status1,tmp1,status2;
+	int tmp, status, tmp1, status1,tmp2,status2;
 	if(wiringPiSetup() == -1){
 		printf("setup wiringPi failed !");
 		return 1;
