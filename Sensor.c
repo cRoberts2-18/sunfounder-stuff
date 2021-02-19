@@ -121,21 +121,21 @@ int main()
 			}
 		}
 		
-		if(pass==0){
 			analogVal = analogRead(PCF + 0);
 			Vr = 5 * (double)(analogVal) / 255;
 			Rt = 10000 * (double)(Vr) / (5 - (double)(Vr));
 			temp = 1 / (((log(Rt/10000)) / 3950)+(1 / (273.15 + 25)));
 			temp = temp - 273.15;
-			printf("Current temperature : %lf\n", temp);
-
+			if(pass==0){
+				printf("Current temperature : %lf\n", temp);
+			}
 			// For a threshold, uncomment one of the code for
 			// which module you use. DONOT UNCOMMENT BOTH!
 			//---------------------------------------------
 			// 1. For Analog Temperature module(with DO)
 			tmp = digitalRead(DOpin);
 
-			if (tmp != status)
+			if (tmp != status && pass==00)
 			{
 				PrintTemp(tmp);
 				status = tmp;
@@ -144,19 +144,19 @@ int main()
 			delay (200);
 
 			analogVal = analogRead(PCF + 0);
-			printf("%d\n", analogVal);
-
+			if(pass==0){
+				printf("%d\n", analogVal);
+			}
 			tmp = digitalRead(DOpin);
 
-			if (tmp != status)
+			if (tmp != status && pass==0)
 			{
 				PrintRain(tmp);
 				status = tmp;
 			}
 
 			delay (200);
-		}
-		pass=0;
+			pass=0;
 	}
 	
 		
