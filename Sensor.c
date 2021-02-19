@@ -87,6 +87,7 @@ int main()
 	unsigned char analogVal, analogVal1;
 	double Vr, Rt, temp;
 	int tmp, status, tmp1, status1,tmp2,status2;
+	int pass = 0;
 	if(wiringPiSetup() == -1){
 		printf("setup wiringPi failed !");
 		return 1;
@@ -101,6 +102,7 @@ int main()
 	tmp2=0;
 	while(1) // loop forever
 	{
+		pass=0;
 		tmp2 = direction();
 			if (tmp2 != status2)
 			{
@@ -109,47 +111,51 @@ int main()
 			}
 		
 		while(status2!=0){
+			pass=1;
 			tmp2 = direction();
 			if (tmp2 != status2)
 			{
 				printf("%s\n", state[tmp2]);
 				status2 = tmp2;
+				
 			}
-		}	
-		analogVal = analogRead(PCF + 0);
-		Vr = 5 * (double)(analogVal) / 255;
-		Rt = 10000 * (double)(Vr) / (5 - (double)(Vr));
-		temp = 1 / (((log(Rt/10000)) / 3950)+(1 / (273.15 + 25)));
-		temp = temp - 273.15;
-		printf("Current temperature : %lf\n", temp);
-		
-		// For a threshold, uncomment one of the code for
-		// which module you use. DONOT UNCOMMENT BOTH!
-		//---------------------------------------------
-		// 1. For Analog Temperature module(with DO)
-		tmp = digitalRead(DOpin);
-
-		if (tmp != status)
-		{
-			PrintTemp(tmp);
-			status = tmp;
 		}
-
-		delay (200);
 		
-		analogVal = analogRead(PCF + 0);
-		printf("%d\n", analogVal);
+		if(pass==0){
+			analogVal = analogRead(PCF + 0);
+			Vr = 5 * (double)(analogVal) / 255;
+			Rt = 10000 * (double)(Vr) / (5 - (double)(Vr));
+			temp = 1 / (((log(Rt/10000)) / 3950)+(1 / (273.15 + 25)));
+			temp = temp - 273.15;
+			printf("Current temperature : %lf\n", temp);
 
-		tmp = digitalRead(DOpin);
+			// For a threshold, uncomment one of the code for
+			// which module you use. DONOT UNCOMMENT BOTH!
+			//---------------------------------------------
+			// 1. For Analog Temperature module(with DO)
+			tmp = digitalRead(DOpin);
 
-		if (tmp != status)
-		{
-			PrintRain(tmp);
-			status = tmp;
+			if (tmp != status)
+			{
+				PrintTemp(tmp);
+				status = tmp;
+			}
+
+			delay (200);
+
+			analogVal = analogRead(PCF + 0);
+			printf("%d\n", analogVal);
+
+			tmp = digitalRead(DOpin);
+
+			if (tmp != status)
+			{
+				PrintRain(tmp);
+				status = tmp;
+			}
+
+			delay (200);
 		}
-
-		delay (200);
-		
 	}
 	
 		
