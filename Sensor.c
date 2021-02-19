@@ -102,7 +102,7 @@ int main()
 	tmp2=0;
 	while(1) // loop forever
 	{
-		pass=0;
+		
 		tmp2 = direction();
 			if (tmp2 != status2)
 			{
@@ -156,6 +156,7 @@ int main()
 
 			delay (200);
 		}
+		pass=0;
 	}
 	
 		
