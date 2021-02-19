@@ -97,6 +97,8 @@ int main()
 	pinMode(DOpin, INPUT);
 
 	status = 0;
+	status2=0;
+	tmp2=0;
 	while(1) // loop forever
 	{
 		tmp2 = direction();
@@ -105,7 +107,7 @@ int main()
 			printf("%s\n", state[tmp2]);
 			status2 = tmp2;
 		}
-		
+		while(status2==0){
 		analogVal = analogRead(PCF + 0);
 		Vr = 5 * (double)(analogVal) / 255;
 		Rt = 10000 * (double)(Vr) / (5 - (double)(Vr));
@@ -139,7 +141,9 @@ int main()
 		}
 
 		delay (200);
+		}
 	}
+	
 		
 	
 	
