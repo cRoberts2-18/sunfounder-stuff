@@ -108,7 +108,7 @@ int main()
 				status2 = tmp2;
 			}
 		
-		while(status2!=0);
+		while(status2!=0){
 			tmp2 = direction();
 			if (tmp2 != status2)
 			{
