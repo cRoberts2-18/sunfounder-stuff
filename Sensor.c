@@ -220,7 +220,7 @@ int main()
 			temp = 1 / (((log(Rt/10000)) / 3950)+(1 / (273.15 + 25)));
 			temp = temp - 273.15;
 			if(pass==0){
-				if(temp!=temperature){
+				if(round(temp*100)!=round(temperature*100)){
 				printf("Current temperature : %lf\n", temp);
 				temperature=temp;
 				}
