@@ -172,8 +172,8 @@ void PrintRain(int x)
 int main()
 {
 	unsigned char analogVal, analogVal1;
-	double Vr, Rt, temp;
-	int tmp, status, tmp1, status1,tmp2,status2, temperature, rain;
+	double Vr, Rt, temperature, temp;
+	int tmp, status, tmp1, status1,tmp2,status2,  rain;
 	int pass = 0;
 	if(wiringPiSetup() == -1){
 		printf("setup wiringPi failed !");
