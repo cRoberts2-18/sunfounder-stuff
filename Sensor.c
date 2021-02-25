@@ -222,7 +222,6 @@ int main()
 			if(pass==0){
 				if(round(temp*100)!=round(temperature*100)){
 				printf("Current temperature : %lf\n", temp);
-				printf(temperature);
 				temperature=temp;
 				}
 			}
