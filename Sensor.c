@@ -173,7 +173,7 @@ int main()
 {
 	unsigned char analogVal, analogVal1;
 	double Vr, Rt, temp;
-	int tmp, status, tmp1, status1,tmp2,status2;
+	int tmp, status, tmp1, status1,tmp2,status2, temperature, rain;
 	int pass = 0;
 	if(wiringPiSetup() == -1){
 		printf("setup wiringPi failed !");
@@ -183,7 +183,13 @@ int main()
 	pcf8591Setup(PCF, 0x48);
 
 	pinMode(DOpin, INPUT);
-
+	
+	fd = wiringPiI2CSetup(LCDAddr);
+	init();
+	
+	write(0, 0, "Greetings!");
+	write(1, 1, "From SunFounder");
+	
 	status = 0;
 	status2=0;
 	tmp2=0;
@@ -214,7 +220,10 @@ int main()
 			temp = 1 / (((log(Rt/10000)) / 3950)+(1 / (273.15 + 25)));
 			temp = temp - 273.15;
 			if(pass==0){
+				if(temp!=temperature){
 				printf("Current temperature : %lf\n", temp);
+				temperature=temp;
+				}
 			}
 			// For a threshold, uncomment one of the code for
 			// which module you use. DONOT UNCOMMENT BOTH!
@@ -232,8 +241,12 @@ int main()
 
 			analogVal = analogRead(PCF + 0);
 			if(pass==0){
+				if(analogVal!=rain){
 				printf("%d\n", analogVal);
+				rain=analogVal;
+				}
 			}
+				
 			tmp = digitalRead(DOpin);
 
 			if (tmp != status && pass==0)
@@ -242,13 +255,6 @@ int main()
 				status = tmp;
 			}
 			
-		
-			fd = wiringPiI2CSetup(LCDAddr);
-			init();
-			write(0, 0, "Greetings!");
-			write(1, 1, "From SunFounder");
-			delay(2000);
-		
 			pass=0;
 	}
 	
