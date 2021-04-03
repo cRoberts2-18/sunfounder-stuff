@@ -1,13 +1,18 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <wiringPi.h>
 #include <pcf8591.h>
 #include <math.h>
 #include <wiringPiI2C.h>
 #include <string.h>
+#include <time.h>
+
 
 #define		PCF     120
 #define		DOpin	0
 #define uchar	unsigned char
+
+FILE *file;
 
 int AIN0 = PCF + 0;
 int AIN1 = PCF + 1;
@@ -17,7 +22,7 @@ int LCDAddr = 0x27;
 int BLEN = 1;
 int fd;
 
-char *state[7] = {"home", "up", "down", "left", "right", "pressed"};
+
 void write_word(int data){
 	int temp = data;
 	if ( BLEN == 1 )
@@ -93,7 +98,6 @@ void write(int x, int y, char data[]){
 	// Move cursor
 	addr = 0x80 + 0x40 * y + x;
 	send_command(addr);
-	
 	tmp = strlen(data);
 	for (i = 0; i < tmp; i++){
 		send_data(data[i]);
@@ -110,7 +114,7 @@ int direction(){
 		tmp = 1;		// up
 	if (y >= 225)
 		tmp = 2;		// down
-	
+
 	if (x >= 225)
 		tmp = 3;		// left
 	if (x <= 30)
@@ -120,10 +124,9 @@ int direction(){
 		tmp = 5;		// button preesd
 	if (x-125<15 && x-125>-15 && y-125<15 && y-125>-15 && b >= 60)
 		tmp = 0;		// home position
-	
+
 	return tmp;
 }
-
 
 void PrintTemp(int x)
 {
@@ -169,12 +172,18 @@ void PrintRain(int x)
 	}
 }
 
-int main()
-{
+int main(){
+	time_t t = time(NULL);
+	struct tm tm = *localtime(&t);
 	unsigned char analogVal, analogVal1;
-	double Vr, Rt, temperature, temp;
+	double Vr, Rt, temperature=1, temp=1, maxTemp=0, minTemp=9999999;
 	int tmp, status, tmp1, status1,tmp2,status2,  rain;
-	int pass = 0;
+	int firstPass = 1;
+	int buggedValue=0;
+	int buggedValue1=0;
+	int loopnum=0;
+	int timer=0;
+
 	if(wiringPiSetup() == -1){
 		printf("setup wiringPi failed !");
 		return 1;
@@ -183,84 +192,147 @@ int main()
 	pcf8591Setup(PCF, 0x48);
 
 	pinMode(DOpin, INPUT);
-	
+
 	fd = wiringPiI2CSetup(LCDAddr);
 	init();
-	
-	write(0, 0, "Greetings!");
-	write(1, 1, "From SunFounder");
-	
+
+	clear();
+
 	status = 0;
 	status2=0;
 	tmp2=0;
 	while(1) // loop forever
 	{
-		
-		tmp2 = direction();
-			if (tmp2 != status2)
-			{
-				printf("%s\n", state[tmp2]);
-				status2 = tmp2;
+	loopnum=loopnum%40;
+		if(loopnum==0){
+			clear();
+			write(0, 0, "Current Temp:   ");
 			}
-		
-		while(status2!=0){
-			pass=1;
-			tmp2 = direction();
-			if (tmp2 != status2)
-			{
-				printf("%s\n", state[tmp2]);
-				status2 = tmp2;
-				
+		if(loopnum==10){
+			clear();
+			write(0, 0, "Max Temp:       ");
 			}
-		}
-		
+		if(loopnum==20){
+			clear();
+			write(0, 0, "Min Temp:       ");
+			}
+		if(loopnum==30){
+			clear();
+			write(0, 0, "Rainfall:       ");
+			}
+
+
 			analogVal = analogRead(PCF + 0);
 			Vr = 5 * (double)(analogVal) / 255;
 			Rt = 10000 * (double)(Vr) / (5 - (double)(Vr));
 			temp = 1 / (((log(Rt/10000)) / 3950)+(1 / (273.15 + 25)));
 			temp = temp - 273.15;
-			if(pass==0){
-				if(round(temp*100)!=round(temperature*100)){
-				printf("Current temperature : %lf\n", temp);
+			char tempstr[15];
+			char templcd[]="";
+			snprintf(tempstr, 50, "%f", temp);
+			strcat(templcd,tempstr);
+			strcat(templcd,"           ");
+			if(loopnum<10){
+				write(0,1,templcd);
+			}
+
+			if(round(temp*100)!=round(temperature*100)){
 				temperature=temp;
+				if(temp>maxTemp){
+					maxTemp=temp;
+					printf("New max %f\n", maxTemp);
+					if(buggedValue==0){
+						buggedValue=1;
+					}
+				}
+				if(buggedValue==1){
+					maxTemp=0;
+					buggedValue=2;
+				}
+
+
+				if(temp<minTemp){
+					minTemp=temp;
+					//snprintf(minlcd, 15, "%d", temp);
+					printf("New min %f\n", temp);
+					if(buggedValue1==0){
+						buggedValue1=1;
+					}
+				}
+				if(buggedValue1==1){
+					minTemp=999;
+					buggedValue1=2;
 				}
 			}
-			// For a threshold, uncomment one of the code for
-			// which module you use. DONOT UNCOMMENT BOTH!
-			//---------------------------------------------
-			// 1. For Analog Temperature module(with DO)
+
+			char mintmp[15];
+			char minlcd[]="";
+			snprintf(mintmp, 50 , "%f", minTemp);
+			strcat(minlcd,mintmp);
+			strcat(minlcd,"               ");
+			if(loopnum>=20&&loopnum<30){
+				write(0, 1, minlcd);
+			}
+
+			char maxtmp[15];
+			char maxlcd[]="";
+			snprintf(maxtmp, 50, "%f",maxTemp);
+			strcat(maxlcd,maxtmp);
+			strcat(maxlcd,"                 ");
+			if(loopnum>=10&&loopnum<20){
+				write(0, 1, maxlcd);
+			}
+
+
 			tmp = digitalRead(DOpin);
 
-			if (tmp != status && pass==00)
-			{
+			if (tmp != status){
 				PrintTemp(tmp);
 				status = tmp;
 			}
 
-			delay (200);
 
 			analogVal = analogRead(PCF + 0);
-			if(pass==0){
-				if(analogVal!=rain){
-				printf("%d\n", analogVal);
-				rain=analogVal;
-				}
+
+			char raintemp[15];
+			char rainlcd[]="";
+			snprintf(raintemp, 15, "%d", rain);
+			strcat(rainlcd,raintemp);
+			strcat(rainlcd,"               ");
+			if(loopnum>=30){
+				write(0,1,rainlcd);
 			}
-				
+			if(analogVal!=rain){
+				rain=analogVal;
+			}
+
+
 			tmp = digitalRead(DOpin);
 
-			if (tmp != status && pass==0)
+			if (tmp != status)
 			{
 				PrintRain(tmp);
 				status = tmp;
 			}
-			
-			pass=0;
+
+			if(timer%60==0){
+				if(timer==0){
+				file=fopen("Readings.csv","w");
+					fprintf(file,"Temperature, Max Temperature, Min Temperature, Rain, Reading Time\n");
+					fclose(file);
+				}
+				file = fopen("Readings.csv","a");
+				fprintf(file,"%f,%f,%f,%d,%d-%02d-%02d %02d:%02d:%02d\n",temp,maxTemp,minTemp,rain,tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+				fclose(file);
+			}
+			if(timer==3600){
+			exit(1);
+			}
+
+			timer+=1;
+			loopnum+=1;
+			delay(1000);
 	}
-	
-		
-	
-	
+
 	return 0;
 }
-
