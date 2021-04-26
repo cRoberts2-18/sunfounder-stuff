@@ -4,7 +4,7 @@ import numpy
 import firebase_admin
 from firebase_admin import credentials, firestore
 
-cred = credentials.Certificate("1234/pisensor-36470-firebase-adminsdk-2wl8o-30b1d1a358.json")
+cred = credentials.Certificate("1234/pisensor-36470-firebase-adminsdk-2wl8o-986e0f0216.json")
 firebase_admin.initialize_app(cred, 
 {
 "databaseURL" : "https://PiSensor.firebaseio.com/"
