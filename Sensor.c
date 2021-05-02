@@ -173,16 +173,16 @@ void PrintRain(int x)
 }
 
 int main(){
-	time_t t = time(NULL);
-	struct tm tm = *localtime(&t);
+	
 	unsigned char analogVal, analogVal1;
-	double Vr, Rt, temperature=1, temp=1, maxTemp=0, minTemp=9999999;
+	double Vr, Rt, temperature=1, temp=1, maxTemp=0, minTemp=9999999, hourlyAvg=0;
 	int tmp, status, tmp1, status1,tmp2,status2,  rain;
 	int firstPass = 1;
 	int buggedValue=0;
 	int buggedValue1=0;
 	int loopnum=0;
 	int timer=0;
+	int counter=0;
 
 	if(wiringPiSetup() == -1){
 		printf("setup wiringPi failed !");
@@ -321,12 +321,18 @@ int main(){
 					fprintf(file,"Temperature, Max Temperature, Min Temperature, Rain, Reading Time\n");
 					fclose(file);
 				}
-				file = fopen("Readings.csv","a");
-				fprintf(file,"%f,%f,%f,%d,%d-%02d-%02d %02d:%02d:%02d\n",temp,maxTemp,minTemp,rain,tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
-				fclose(file);
+				hourlyAvg+=temp;
+				counter+=1;
+				
 			}
 			if(timer==3600){
-			exit(1);
+				time_t t = time(NULL);
+				struct tm tm = *localtime(&t);
+				int avgTemp	= round(hourlyAvg/counter);
+				file = fopen("Readings.csv","a");
+				fprintf(file,"%f,%f,%f,%d,%d-%02d-%02d %02d:%02d:%02d\n",avgTemp,maxTemp,minTemp,rain,tm.tm_year+1900, tm.tm_mon+1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+				fclose(file);
+				exit(1);
 			}
 
 			timer+=1;
